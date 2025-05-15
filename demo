@@ -1,0 +1,167 @@
+128-25(.128)64-26(.192).32-27(.224).16-28(.240).8-29(.248).4-30(.252)
+###пользователи###
+useradd sshuser -u 1010 -u
+passwd sshuser
+usermod -aG sudo sshuser
+visudo или nano /etc/sudoers
+sshuser ALL=NOPASSWD: ALL
+useradd net_admin -u
+passwd net_admin
+usermod -aG sudo net_admin
+visudo или nano /etc/sudoers
+net_admin ALL=NOPASSWD: ALL
+
+##MASQUERADE##
+iptables -t nat -A POSTROUTING -o ens3 -j MASQUERADE
+nano /etc/sysctl.conf
+#forward 1
+sysctl -p
+
+###vrem###
+timedatectl set-timezone Asia/Krasnoyarsk
+
+#dhcp
+apt update
+apt install isc-dhcp-server -y
+nano /etc/default/isc-dhcp-server
+nano /etc/dhcp/dhcpd.conf
+ddns-update-style none;
+authoritative;
+subnet 192.168.200.0 network 255.255.255.240; {
+range 192.168.200.2 192.168.200.15;
+option domain-name-servers 8.8.8.8;
+option routers 192.168.200.1;
+}
+host hq-cli {
+hardware ethernet ;
+fixed-address 192.168.200.2;
+}
+sytemctl restart isc-dhcp-
+
+#frr
+apt update
+apt install frr -y
+nano /etc/frr/daemons #ospfd=yes
+systemctl enable frr –now
+vtysh
+configure terminal
+router ospf
+passive-interface default
+network 192.168.100.0/26 area 0 (VLAN100)
+network 192.168.200.0/28 area 0 (VLAN200)
+network 10.10.0.0/30 area 0 (GRE)
+area 0 authentication
+exit
+interface tun1
+no ip ospf passive
+ip ospf authentication
+ip ospf authentication password
+exit
+exit
+write
+systemctl restart frr
+vtysh
+show running-config
+
+###vlan and switch
+apt install openvswitch-switch
+ovs-vsctl add-br hq-sw
+ovs-vsctl add-port hq-sw ens4 tag=100
+ovs-vsctl add-port hq-sw ens5 tag=200
+ovs-vsctl add-port hq-sw ens6 tag=999
+ovs-vsctl add-port hq-sw vlan100 tag=100 --set interface vlan100 type=internal
+ovs-vsctl add-port hq-sw vlan200 tag=200 --set interface vlan200 type=internal
+ovs-vsctl add-port hq-sw vlan999 tag=999 --set interface vlan999 type=internal
+systemctl restart openvswitch-switch
+ip link hq-sw up
+ip a add 192.168.100.5/26 dev vlan100
+ip a add 192.168.200.5/28 dev vlan200
+ip a add 192.168.100.2.5/29 dev vlan999
+ip link set vlan100 up
+ip link set vlan200 up
+ip link set vlan999 up
+
+###SELINUX###
+apt install selinux-basics selinux-policy-default aditd -y
+nano /etc/selinux/config => SELINUX=permissive
+setenforce 0
+nano /etc/ssh/sshd_config
+>Port 2024; >#Authentication AllowUsers sshuser; >MaxAuthTries2; >#no default banner Banner
+/etc/ssh-banner; ctrl+x, enter
+nano /etc/ssh-banner
+**********************
+Authentication ssh-banner
+**********************
+ctrl+x, enter
+sysctemctl restart sshd
+semanage port -a -t ssh_port_t -p tcp 2024
+setenforce 0
+ssh sshuser@ip -p 2024
+
+###Mediawiki
+apt install docker.io docker-compose -y
+cd /home/sshuser
+nano wiki.yml
+v brausere: mediawiki docker-compose sait => Docker/Hub
+version: “2”
+ports 8080:80
+container name: mariadb
+image: mariadb:10.8.2
+v ssylke /mariadb
+wikip@ssw0rd
+docker volume create dbvolume
+docker-compose -f wiki.yml up -d
+http://ip : 8080
+na saite mariadb; mediawiki; название вики: wiki; хватит уже просто установи вики;
+v terminale cd /downloads
+docker cp LocalSettings.php wiki:/var/www/html
+cd => docker restart wiki => docker-compose -f wiki.yml up -d
+http://ip : 8080
+
+###MOODLE####
+apt install php7.3 php7.3-curl php7.3-mysql php7.3-zip php7.3-mbstring php7.3-xml php7.3-intl php7.3-
+gd apache2 mariadb-server mariadb-client -y
+mysql -u root -p
+create database moodle;
+create usera ‘moodle’@’ localhost’ identified by ‘P@ssw0rd’;
+grant all privileges on moodle.* to ‘moodle’@’ localhost’;
+flush privileges;
+v brausere moodle legacy => 3.11.18 => v Downloads => PKM => ExtractHere
+cp -r /root/Downloads/moodle /var/www/html
+chmod 777 /var/www/html/moodle
+mkdir /var/www/moodledata
+chmod 777 /var/www/moodledata
+systemctl restart apache2
+v brausere localhost/moodle
+
+###chrony###
+apt install chrony
+nano /etc/chrony.conf
+HQ-RTR
+#Dopisыvaem
+server 127.0.0.1 iburst prefer
+local stratum 5
+allow 192.168.100.0/26 (vlan 100)
+allow 192.168.200.0/28 (vlan 200)
+allow 192.168.1.0/27 (br)
+OSTALNOE #
+ctrl+x, enter
+systemctl restart chronyd
+systemctl enable –now chronyd
+NA OSTALNYX USTROISTVAX; USTANOVIT; I TOT KONFIG
+server 192.168.100.1/26 iburst
+driftfile /var/lib/chrony/drift
+makestep 1.0.3
+ctrl+x, enter
+systemctl restart chronyd
+systemctl enable –now chronyd
+PROVERKA CLI
+chronyc sources
+PROVERKA HQ-RTR
+chronyc clients
+
+####YANDEX####
+Устанавливаем пакет для линукса
+cd Downloads
+apt install ./Yandex.deb (nasvanie saita dpkg- : yandex.deb)
+cd
