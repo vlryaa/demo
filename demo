@@ -165,3 +165,41 @@ chronyc clients
 cd Downloads
 apt install ./Yandex.deb (nasvanie saita dpkg- : yandex.deb)
 cd
+
+###ansible###
+apt update 
+apt install ansible -y 
+mkdir -p /etc/ansible
+nano /etc/ansible/hosts
+#на остальных устройствах соотвественно имени и айпи адреса в данном файле
+HQ-SRV ansible_host=192.168.100.2
+#na BR-SRV
+ssh-keygen -t rsa -b 4096 -N"" -f ~/.ssh/id_rsa
+ssh-copy-id имяустройства@ipaddress(hq-srv.hq-cli.hq-rtr.br-rtr)
+
+###dns##
+apt install bind9
+nano /etc/bind/named.conf.options
+# listen-on port 53 { 127.0.0.1; 192.168.100.2/26; 192.168.100.64/28; 192.168.200.0/27; }
+nano /etc/bind/named.conf.local
+# zone "au-team.irpo" {
+# type master;
+# file "master/au-team_rev.db" ;
+# };
+# zone "100.168.192-in.addr.arpa" {
+# type master;
+# file "master/au-team_rev.db";
+# };
+ПРОВЕРКА
+named-checkconf
+mkdir /etc/bind/zones
+cp /etc/bind/db.local /etc/bind/zones/au-team.db
+nano /etc/bind/zones/au-team.db
+IN A 192.168.100.2
+hq-rtr IN A 192.168.100.1
+br-rtr IN A 192.168.200.1
+hq-srv IN A 192.168.100.2
+br-srv IN A 192.168.200.2
+hq-cli IN A 192.168.100.66
+moodle CNAME hq.rtr.au-team.irpo.
+wiki CNAME hq.rtr.au-team.irpo.
