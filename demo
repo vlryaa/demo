@@ -195,6 +195,7 @@ named-checkconf
 mkdir /etc/bind/zones
 cp /etc/bind/db.local /etc/bind/zones/au-team.db
 nano /etc/bind/zones/au-team.db
+IN NS au-team.irpo.
 IN A 192.168.100.2
 hq-rtr IN A 192.168.100.1
 br-rtr IN A 192.168.200.1
@@ -203,3 +204,22 @@ br-srv IN A 192.168.200.2
 hq-cli IN A 192.168.100.66
 moodle CNAME hq.rtr.au-team.irpo.
 wiki CNAME hq.rtr.au-team.irpo.
+сохраняемся
+cp /etc/bind/db.127 /etc/bind/zones/au-team_rev.db
+nano /etc/bind/zones/au-team_rev.db
+IN NS au-team.irpo.
+1 IN PTR hq-rtr.au-team.irpo.
+2 IN PTR hq-srv.au-team.irpo.
+66 IN PTR hq-cli.au-team.irpo
+ctrl+x enter
+chown -R root /etc/bind/zones
+chown 0640
+mkdir /var/cache/bind/master
+cp /etc/bind/zones/au-team.db /var/cache/bind/master
+cp /etc/bind/zones/au-team_r
+named-checkconf -z
+добавляем в днс сервер (nmtui) у HQ-SRV; BR-SRV IP(HQ-SRV)=192.168.100.2
+systemctl enable --now bind9
+systemctl restart bind9
+проверить ping с BR-SRV ping au-team.irpo
+смотреть хосты командой host (host hq-rtr.au-team.irpo и т.д.)
