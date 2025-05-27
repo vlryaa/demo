@@ -80,7 +80,21 @@ ip a add 192.168.100.2.5/29 dev vlan999
 ip link set vlan100 up
 ip link set vlan200 up
 ip link set vlan999 up
+nano /etc/network/interfaces
+auto vlan100 #Включение интерфейса
+iface vlan100 inet static #Обозначение того, что он статический
+address 192.168.100.1/26 #Выделение ему IP-адреса с маской подсети
 
+auto vlan200
+iface vlan200 inet static
+address 192.168.100.65/28
+
+auto vlan999
+iface vlan999 inet static
+address 192.168.100.81/29
+
+post-up ip link set hq-sw up
+перезагружаем systemctl restart networking
 ###SELINUX###
 apt install selinux-basics selinux-policy-default aditd -y
 nano /etc/selinux/config => SELINUX=permissive
