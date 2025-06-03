@@ -36,12 +36,12 @@ host hq-cli {
 hardware ethernet ;
 fixed-address 192.168.200.2;
 }
-sytemctl restart isc-dhcp-
+sytemctl restart isc-dhcp-server
 
 #frr
 apt update
 apt install frr -y
-nano /etc/frr/daemons #ospfd=yes
+nano /etc/frr/daemons #ospfd=yes #ospf6d=yes
 systemctl enable frr –now
 vtysh
 configure terminal
