@@ -183,6 +183,15 @@ apt install ./Yandex.deb (nasvanie saita dpkg- : yandex.deb)
 cd
 
 ###dns##
+nano /etc/hosts
+192.168.100.1 hq-rtr.au-team.irpo (делаем на шку)
+
+192.168.1.2 br-rtr.au-team.irpo (делаем на бр)
+
+проверка getent hosts hq-rtr.au-team.irpo
+ping hq-rtr.au-team.irpo
+
+
 apt install bind9
 nano /etc/bind/named.conf.options
 # listen-on port 53 { 127.0.0.1; 192.168.100.2/26; 192.168.100.64/28; 192.168.200.0/27; }
