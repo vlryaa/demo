@@ -43,6 +43,7 @@ sytemctl restart isc-dhcp-server
 apt update
 apt install frr -y
 nano /etc/frr/daemons #ospfd=yes #ospf6d=yes
+systemctl restart frr
 systemctl enable frr –now
 vtysh
 configure terminal
