@@ -16,10 +16,11 @@ iptables -t nat -A POSTROUTING -o ens3 -j MASQUERADE
 nano /etc/sysctl.conf
 #forward 1
 sysctl -p
-
+apt install iptables-persistent
 ###vrem###
 timedatectl set-timezone Asia/Krasnoyarsk
-
+Изменение даты и времени при необходимости.
+timedatectl set-time "2024-01-01 00:00:00"
 #dhcp
 apt update
 apt install isc-dhcp-server -y
